@@ -1,0 +1,16 @@
+user="saltyleague"
+pass="salty1"
+dev_user="saltyloldev"
+dev_pass="salty1"
+version="3.15.XX"
+server="NA"
+spectatorApiBase="http://spectator.na.lol.riotgames.com:8088/"
+spectatorApiFeaturedEndpoint="observer-mode/rest/featured"
+saltyspoonApiBase="http://www.teemoscasino.com"
+saltyspoonApiBaseDev="http://localhost:3000"
+saltyspoonApiGameStartEndpoint="/api/game_events/start"
+saltyspoonApiGameEndEndpoint="/api/game_evenmts/end"
+api_key="dc9de5436cbb9180048322451ba4b720cee2f50c"
+gameCheckInterval=10000
+spectateDestroyDelay=190000
+dev=false

@@ -1,0 +1,9 @@
+lollocation=C:\Riot Games\League of Legends\
+user=saltylolbot
+pass=salty1
+dev_user="saltylolbotdev"
+dev_pass="salty1"
+version=3.15.XX
+region=North America
+locale=en_US
+dev=false

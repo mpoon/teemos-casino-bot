@@ -1,0 +1,6 @@
+.DS_Store
+.svn
+lib/
+out/
+.idea/
+teemos-casino-bot.iml
