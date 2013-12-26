@@ -10,6 +10,8 @@
     <orderEntry type="library" name="leaguelib" level="project" />
     <orderEntry type="library" name="groovy-2.1.8" level="application" />
     <orderEntry type="library" name="org.codehaus.groovy.modules.http-builder:http-builder:0.6" level="project" />
+    <orderEntry type="library" name="tess4j" level="project" />
+    <orderEntry type="library" name="jai_imageio" level="project" />
   </component>
 </module>
 

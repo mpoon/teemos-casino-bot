@@ -7,30 +7,33 @@
  */
 
 
-import groovy.util.logging.Log
-import groovyx.net.http.*
 
-import static groovyx.net.http.Method.*
+import groovy.util.logging.Log
+import groovyx.net.http.HTTPBuilder
+
+import static groovyx.net.http.Method.POST
 
 @Log
 class Bot {
     SpectateHandler spectateHandler
     LoLHandler lolHandler
+    VisualHandler visualHandler
 
     def Bot() {
         spectateHandler = new SpectateHandler()
         lolHandler = new LoLHandler()
+        visualHandler = new VisualHandler()
     }
 
     def gameStart_toServer(http, int gameId) {
         def delays = [0, 100, 500, 1000, 5000, 30000, 60000]
         Thread.start {
             def success = false
-            while(!success) {
+            while (!success) {
                 println "game_start: " + delays[0]
                 Thread.sleep(delays[0])
                 try {
-                    http.request( POST ) {
+                    http.request(POST) {
                         uri.path = lolHandler.botConfig.saltyspoonApiGameStartEndpoint
                         uri.query = [game_id: gameId]
                         headers.'Authorization' = lolHandler.botConfig.api_key
@@ -43,15 +46,15 @@ class Bot {
 
                         response.failure = { resp ->
                             log.severe("Bot: game_start API error: ${resp.statusLine}")
-                            if(delays.size() > 1) {
+                            if (delays.size() > 1) {
                                 delays.remove(0)
                             }
                         }
                     }
                 }
-                catch(Exception e) {
+                catch (Exception e) {
                     log.info("Bot: game_start API error: ${e.message}")
-                    if(delays.size() > 1) {
+                    if (delays.size() > 1) {
                         delays.remove(0)
                     }
                 }
@@ -63,11 +66,11 @@ class Bot {
         def delays = [0, 100, 500, 1000, 5000, 30000, 60000]
         Thread.start {
             def success = false
-            while(!success) {
+            while (!success) {
                 println "game_end: " + delays[0]
                 Thread.sleep(delays[0])
                 try {
-                    http.request( POST ) {
+                    http.request(POST) {
                         uri.path = lolHandler.botConfig.saltyspoonApiGameEndEndpoint
                         uri.query = [game_id: gameId, winner: winner]
                         headers.'Authorization' = lolHandler.botConfig.api_key
@@ -80,15 +83,15 @@ class Bot {
 
                         response.failure = { resp ->
                             log.severe("Bot: game_end API error: ${resp.statusLine}")
-                            if(delays.size() > 1) {
+                            if (delays.size() > 1) {
                                 delays.remove[0]
                             }
                         }
                     }
                 }
-                catch(Exception e) {
+                catch (Exception e) {
                     log.info("Bot: game_end API error: ${e.message}")
-                    if(delays.size() > 1) {
+                    if (delays.size() > 1) {
                         delays.remove[0]
                     }
                 }
@@ -101,15 +104,16 @@ class Bot {
                 new HTTPBuilder(lolHandler.botConfig.saltyspoonApiBaseDev) :
                 new HTTPBuilder(lolHandler.botConfig.saltyspoonApiBase)
 
-        while(true) {
+        while (true) {
 
             gameStart_toServer(http, lolHandler.game.getId())
 
-            if(!lolHandler.botConfig.dev.toBoolean()) {
+            if (!lolHandler.botConfig.dev.toBoolean()) {
                 spectateHandler.startSpectate(lolHandler.getFeaturedSummoner())
+                visualHandler.run()
             }
 
-            while(!lolHandler.getGameDone()) {
+            while (!lolHandler.getGameDone()) {
                 Thread.sleep(lolHandler.botConfig.gameCheckInterval);
                 lolHandler.refresh()
             }
@@ -118,10 +122,12 @@ class Bot {
 
             gameEnd_toServer(http, lolHandler.game.getId(), lolHandler.winner.toString().toLowerCase())
 
-            if(!lolHandler.botConfig.dev.toBoolean()) {
+            if (!lolHandler.botConfig.dev.toBoolean()) {
                 spectateHandler.endSpectate()
+                visualHandler.stop()
             }
 
+            visualHandler.reset()
             lolHandler.reset()
             lolHandler.init()
         }

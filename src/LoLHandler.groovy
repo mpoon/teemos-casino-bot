@@ -2,11 +2,11 @@ import com.achimala.leaguelib.connection.LeagueAccount
 import com.achimala.leaguelib.connection.LeagueConnection
 import com.achimala.leaguelib.connection.LeagueServer
 import com.achimala.leaguelib.models.*
+import groovy.util.logging.Log
 import groovyx.net.http.HTTPBuilder
 
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
-import groovy.util.logging.*
+import static groovyx.net.http.ContentType.JSON
+import static groovyx.net.http.Method.GET
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,19 +27,19 @@ class LoLHandler {
     boolean initialized = false
     boolean gameDone = false
 
-    LoLHandler(){
+    LoLHandler() {
         log.entering('LoLHandler', 'LoLHandler')
         log.info('LoLHandler:  slurp bot config')
         try {
             botConfig = new ConfigSlurper().parse(new File('botConfig').toURL())
         }
-        catch(Exception e) {
+        catch (Exception e) {
             log.severe('LoLHandler: ' + e.message)
             throw e
         }
 
         conn = connect()
-        if(conn == null) {
+        if (conn == null) {
             log.severe('LoLHandler: Error connecting to League of Legends servers')
             throw new Exception("LoLHandler: Error connecting to League of Legends servers")
         }
@@ -57,15 +57,14 @@ class LoLHandler {
         log.entering('LoLHandler', 'connect')
         LeagueServer server = LeagueServer.findServerByCode(botConfig.server)
         LeagueConnection c = new LeagueConnection(server)
-        if(botConfig.dev) {
+        if (botConfig.dev) {
             c.getAccountQueue().addAccount(new LeagueAccount(server, botConfig.version, botConfig.dev_user, botConfig.dev_pass))
-        }
-        else {
+        } else {
             c.getAccountQueue().addAccount(new LeagueAccount(server, botConfig.version, botConfig.user, botConfig.pass))
         }
         Map exceptions = c.getAccountQueue().connectAll()
-        if(exceptions != null) {
-            for(account in exceptions.keySet())
+        if (exceptions != null) {
+            for (account in exceptions.keySet())
                 log.severe('LoLHandler: ' + account + " error: " + exceptions.get(account))
             return null
         }
@@ -86,16 +85,16 @@ class LoLHandler {
 
     def refresh() {
         log.entering('LoLHandler', 'refresh')
-        if(!initialized) {
+        if (!initialized) {
             log.warning('LoLHandler: refreshing when not initialized')
             return
         }
         conn.getPlayerStatsService().fillMatchHistory(featuredSummoner)
         List<MatchHistoryEntry> matches = featuredSummoner.getMatchHistory()
-        MatchHistoryEntry mostRecentMatch = matches.get(matches.size()-1)
-        if(mostRecentMatch.getGameId() == game.getId()) {
+        MatchHistoryEntry mostRecentMatch = matches.get(matches.size() - 1)
+        if (mostRecentMatch.getGameId() == game.getId()) {
             winner = team
-            if(mostRecentMatch.getStat(MatchHistoryStatType.LOSE)) {
+            if (mostRecentMatch.getStat(MatchHistoryStatType.LOSE)) {
                 winner = (team == TeamType.BLUE) ? TeamType.PURPLE : TeamType.BLUE
             }
             log.info("LoLHandler: Game: ${game.getId()} Winner: ${winner.toString()}")
@@ -126,9 +125,13 @@ class LoLHandler {
             }
         }
         try {
-            return featuredGames["gameList"][0]["participants"][0]["summonerName"]
+            def index = 0
+            while (index < 5 && featuredGames["gameList"][index]["gameMode"] != "CLASSIC") {
+                index++
+            }
+            return featuredGames["gameList"][index]["participants"][0]["summonerName"]
         }
-        catch(e) {
+        catch (e) {
             log.severe('LoLHandler: Unexpected featured games API response')
             throw new Exception("LoLHandler: Unexpected featured games API response")
         }
