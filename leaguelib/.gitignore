@@ -6,7 +6,5 @@ build/
 headerstuff.txt
 rawmessages
 src/com/gvaneyck/runesorter
-src/com/gvaneyck/spectate
-src/com/gvaneyck/util
 *.MF
 test-console.sh
